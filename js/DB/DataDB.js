@@ -1,12 +1,11 @@
 ﻿// data-db.js
-// Contacts Database API — stores contact records in localStorage.
-// Only accessed by data-server.js. Never called directly from client code.
 
-// ── localStorage keys
+
+
 const CONTACTS_KEY    = 'contacts_app__contacts';
 const CONTACTS_ID_KEY = 'contacts_app__contacts_next_id';
 
-// ── Private helpers
+// Private
 function _loadContacts() {
     return JSON.parse(localStorage.getItem(CONTACTS_KEY) || '[]');
 }
@@ -21,24 +20,21 @@ function _nextContactId() {
     return current;
 }
 
-// ── Public DB API
+// Public
 window.DataDB = {
 
-    // Get all contacts belonging to a user.
+ 
     getAll: function(userId) {
         return _loadContacts().filter(c => c.userId === userId);
     },
 
-    // Get a single contact by id. Enforces userId so users can't read each other's data.
-    // Returns the contact object or null.
+    
     getOne: function(contactId, userId) {
         const contacts = _loadContacts();
         return contacts.find(c => c.id === contactId && c.userId === userId) || null;
     },
 
-    // Add a new contact for a user.
-    // Expects: {userId, firstName, lastName, phone, email, address}
-    // Returns: the new contact object (including generated id).
+
     add: function({ userId, firstName, lastName, phone, email, address }) {
         const contacts = _loadContacts();
         const newContact = {
@@ -55,9 +51,7 @@ window.DataDB = {
         return newContact;
     },
 
-    // Update an existing contact. Only updates fields provided in `fields`.
-    // Enforces userId ownership check.
-    // Returns the updated contact or null if not found.
+
     update: function(contactId, userId, fields) {
         const contacts = _loadContacts();
         const idx = contacts.findIndex(c => c.id === contactId && c.userId === userId);
@@ -73,8 +67,7 @@ window.DataDB = {
         return contacts[idx];
     },
 
-    // Delete a contact by id. Enforces userId ownership.
-    // Returns true if deleted, false if not found.
+
     remove: function(contactId, userId) {
         const contacts = _loadContacts();
         const idx = contacts.findIndex(c => c.id === contactId && c.userId === userId);

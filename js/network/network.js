@@ -1,23 +1,20 @@
 ﻿// network.js
-// Network simulator — routes FAJAX requests to the correct server,
-// with configurable random delay and message drop.
+
 
 window.Network = {
 
-    // Configuration (adjustable from browser console for testing)
-    dropRate: 0.1,   // 0.0 = never drop, 0.5 = drop 50% of messages
-    minDelay: 1000,  // minimum one-way delay in ms
-    maxDelay: 3000,  // maximum one-way delay in ms
+    dropRate: 0.1,   
+    minDelay: 1000,  
+    maxDelay: 3000,  
 
-    // Called by FXMLHttpRequest.send().
-    // Simulates: request trip → server processing → response trip.
+   
     send: function(fxhr) {
         const delay1 = Network._randomDelay();
 
-        // ── Request trip
+       
         setTimeout(function() {
 
-            // Maybe drop the request
+          
             if (Network._shouldDrop()) {
                 const delay2 = Network._randomDelay();
                 setTimeout(function() {
@@ -26,14 +23,14 @@ window.Network = {
                 return;
             }
 
-            // Route to the correct server
+          
             const server = Network._route(fxhr._url);
             if (!server) {
                 fxhr._triggerError('Network error — unknown destination');
                 return;
             }
 
-            // Build the request object — deserialize the JSON body on "arrival" at the server
+        
             const request = {
                 method:  fxhr._method,
                 url:     fxhr._url,
@@ -42,11 +39,11 @@ window.Network = {
             };
             const response = server.handle(request);
 
-            // ── Response trip
+          
             const delay2 = Network._randomDelay();
             setTimeout(function() {
 
-                // Maybe drop the response
+           
                 if (Network._shouldDrop()) {
                     fxhr._triggerError('Network error — response dropped');
                     return;
@@ -59,7 +56,7 @@ window.Network = {
         }, delay1);
     },
 
-    // ── Private helpers
+
 
     _randomDelay: function() {
         return Network.minDelay + Math.random() * (Network.maxDelay - Network.minDelay);
@@ -69,7 +66,7 @@ window.Network = {
         return Math.random() < Network.dropRate;
     },
 
-    // Route a URL to the correct server object.
+    
     _route: function(url) {
         if (url.startsWith('/users/'))    return UsersServer;
         if (url.startsWith('/contacts'))  return DataServer;
