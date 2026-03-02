@@ -3,7 +3,7 @@
 
 window.DataServer = {
 
-
+// public
     handle: function(request) {
         const { method, url, headers, body } = request;
 
@@ -31,7 +31,7 @@ window.DataServer = {
         return { status: 400, body: { message: 'Bad request' } };
     },
 
-
+// private
     _authenticate: function(headers) {
         if (!headers || !headers['Authorization']) return null;
         const parts = headers['Authorization'].split(' ');

@@ -1,6 +1,6 @@
 ﻿// network.js
 
-
+// public 
 window.Network = {
 
     dropRate: 0.1,   
@@ -57,7 +57,7 @@ window.Network = {
     },
 
 
-
+//private
     _randomDelay: function() {
         return Network.minDelay + Math.random() * (Network.maxDelay - Network.minDelay);
     },

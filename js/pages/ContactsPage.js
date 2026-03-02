@@ -1,19 +1,15 @@
 ﻿// contacts-page.js
-// Contacts screen controller — called by the router after injecting contacts.html.
 
 function contactsPageInit() {
 
-    // ── Auth guard
     if (!window.AppSession) {
         Router.navigate('login');
         return;
     }
 
-    // ── In-memory state
-    let _allContacts  = [];   // full list from server
-    let _requestId    = 0;    // race-condition guard counter
+    let _allContacts  = [];   
+    let _requestId    = 0;    
 
-    // ── DOM refs
     const greetingEl     = document.getElementById('user-greeting');
     const logoutBtn      = document.getElementById('logout-btn');
     const searchInput    = document.getElementById('search-input');
@@ -23,7 +19,6 @@ function contactsPageInit() {
     const loadingOverlay = document.getElementById('loading-overlay');
     const banner         = document.getElementById('contacts-banner');
 
-    // Modal
     const modalOverlay  = document.getElementById('modal-overlay');
     const modalTitle    = document.getElementById('modal-title');
     const modalClose    = document.getElementById('modal-close');
@@ -41,8 +36,6 @@ function contactsPageInit() {
     const modalBtnText  = document.getElementById('modal-btn-text');
     const modalSpinner  = document.getElementById('modal-spinner');
 
-    // ── Avatar helpers
-    // Generate a stable, hue-shifted color from any string
     function _avatarColor(str) {
         let h = 0;
         const s = String(str || '');
@@ -50,24 +43,21 @@ function contactsPageInit() {
         return 'hsl(' + (Math.abs(h) % 360) + ', 55%, 46%)';
     }
 
-    // Get up to 2 initials from first + last name
     function _initials(first, last) {
         const a = (first || '').trim()[0] || '';
         const b = (last  || '').trim()[0] || '';
         return (a + b).toUpperCase() || '?';
     }
 
-    // ── Init UI
-    // Populate the user badge in the header with initials + name
     const _userParts = (AppSession.fullName || '').trim().split(/\s+/).filter(Boolean);
     const _userInit  = _userParts.map(function(w) { return w[0]; }).slice(0, 2).join('').toUpperCase() || '?';
+
     greetingEl.innerHTML =
         '<div class="user-badge-avatar" style="background:' + _avatarColor(AppSession.fullName) + '">' +
             _userInit +
         '</div>' +
         '<span>' + _esc(AppSession.fullName) + '</span>';
 
-    // ── Banner helpers
     function showBanner(msg, type, retryFn) {
         banner.textContent = '';
         banner.className   = 'banner ' + type;
@@ -88,9 +78,9 @@ function contactsPageInit() {
         modalBanner.className   = 'banner ' + type;
         modalBanner.classList.remove('hidden');
     }
+
     function hideModalBanner() { modalBanner.classList.add('hidden'); }
 
-    // ── Loading state
     function setLoading(on) {
         loadingOverlay.classList.toggle('hidden', !on);
         addBtn.disabled = on;
@@ -102,14 +92,12 @@ function contactsPageInit() {
         modalSpinner.classList.toggle('hidden', !on);
     }
 
-    // ── FAJAX helper
     function buildFxhr() {
         const fxhr = new FXMLHttpRequest();
         fxhr.setRequestHeader('Authorization', 'Bearer ' + AppSession.token);
         return fxhr;
     }
 
-    // ── Escape HTML to prevent XSS
     function _esc(str) {
         if (!str) return '';
         return String(str)
@@ -119,7 +107,6 @@ function contactsPageInit() {
             .replace(/"/g, '&quot;');
     }
 
-    // ── SVG icons for action buttons
     const ICON_EDIT =
         '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
         'stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' +
@@ -136,7 +123,6 @@ function contactsPageInit() {
         '<path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>' +
         '</svg>';
 
-    // ── Render
     function renderContacts(contacts) {
         tbody.innerHTML = '';
 
@@ -167,7 +153,6 @@ function contactsPageInit() {
             tbody.appendChild(tr);
         });
 
-        // Bind row action buttons
         tbody.querySelectorAll('.edit-btn').forEach(function(btn) {
             btn.addEventListener('click', function() {
                 const contact = _allContacts.find(function(c) { return c.id === parseInt(btn.dataset.id); });
@@ -181,18 +166,16 @@ function contactsPageInit() {
         });
     }
 
-    // ── Load contacts
     function loadContacts() {
         const myId = ++_requestId;
         hideBanner();
         setLoading(true);
-        _lastAction = loadContacts;
 
         const fxhr = buildFxhr();
         fxhr.open('GET', '/contacts');
 
         fxhr.onload = function() {
-            if (myId !== _requestId) return; // stale response — discard
+            if (myId !== _requestId) return; 
             setLoading(false);
             if (fxhr.status === 200) {
                 const body = JSON.parse(fxhr.responseText);
@@ -214,7 +197,6 @@ function contactsPageInit() {
         fxhr.send(null);
     }
 
-    // ── Add / Update contact
     function saveContact(e) {
         e.preventDefault();
         hideModalBanner();
@@ -267,7 +249,6 @@ function contactsPageInit() {
         fxhr.send(fields);
     }
 
-    // ── Delete contact
     function deleteContact(contactId) {
         if (!confirm('Delete this contact?')) return;
 
@@ -296,14 +277,12 @@ function contactsPageInit() {
         fxhr.send(null);
     }
 
-    // ── Session expiry
     function handleSessionExpired() {
         window.AppSession = null;
         alert('Your session has expired. Please log in again.');
         Router.navigate('login');
     }
 
-    // ── Search
     searchInput.addEventListener('input', function() {
         const q = searchInput.value.toLowerCase().trim();
         if (!q) {
@@ -317,7 +296,6 @@ function contactsPageInit() {
         renderContacts(filtered);
     });
 
-    // ── Modal open / close
     function openModal(contact) {
         hideModalBanner();
         firstNameErr.textContent = '';
@@ -346,7 +324,6 @@ function contactsPageInit() {
         setModalLoading(false);
     }
 
-    // ── Event bindings
     addBtn.addEventListener('click', function() { openModal(null); });
 
     modalClose.addEventListener('click', closeModal);
@@ -362,6 +339,5 @@ function contactsPageInit() {
         Router.navigate('login');
     });
 
-    // ── Initial load
     loadContacts();
 }
